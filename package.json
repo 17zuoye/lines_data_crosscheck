@@ -1,0 +1,25 @@
+{
+  "name"          : "lines_data_crosscheck",
+  "description"   : "Crosscheck lines of data.",
+  "url"           : "https://github.com/17zuoye/lines_data_crosscheck",
+  "keywords"      : ["crosscheck", "json"],
+  "author"        : "David Chen <mvjome@gmail.com>",
+  "dependencies"  : {
+    "underscore"  : ">=1.7.0"
+  },
+  "devDependencies": {
+    "coffee-script" : ">= 1.8",
+    "grunt" : "",
+    "grunt-contrib-coffee" : ""
+  },
+  "scripts": {
+    "doc": "docco src/lines_data_crosscheck.js"
+  },
+  "main"          : "lib/lines_data_crosscheck.js",
+  "version"       : "0.0.1",
+  "license"       : "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/17zuoye/lines_data_crosscheck.git"
+  }
+}
