@@ -1,8 +1,8 @@
-_            = require('underscore')
-lineReader   = require('line-reader')
-Set          = require('set')
-assert       = require('assert')
-jsondiff     = require('json-diff/lib/cli')
+_            = require 'underscore'
+lineReader   = require 'line-reader'
+Set          = require 'set'
+assert       = require 'assert'
+jsondiff     = require 'json-diff/lib/cli'
 
 
 class LinesDataCrosscheck
@@ -22,7 +22,6 @@ class LinesDataCrosscheck
         # 数据规整化
         @data_normalization_func = data_normalization_func || (obj1) -> obj1
 
-        _.isEqual
 
     class ItemIdContent
         constructor: (@id, @content) ->
@@ -57,7 +56,7 @@ class LinesDataCrosscheck
 
 
     reservoir_sampling: (file1) ->
-        # 参考文章。感谢 @晓光 提示他之前拿类似问题面试过别人。
+        # 参考文章。感谢 @晓光 提示。
         # http://en.wikipedia.org/wiki/Reservoir_sampling
 
         # Cloudera 也有介绍文章和对应实现。
@@ -105,3 +104,6 @@ class LinesDataCrosscheck
                 sample_dict[item1.id] = item.content
 
         return sample_dict
+
+
+module.exports = LinesDataCrosscheck

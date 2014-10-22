@@ -11,7 +11,8 @@
     "assert"      : "",
     "fast-stats"  : ">= 0.0.2",
     "json-diff"   : "",
-    "random-tools": ""
+    "random-tools": "",
+    "nodeunit"    : ">= 0.9"
   },
   "devDependencies": {
     "coffee-script" : ">= 1.8",
@@ -19,7 +20,8 @@
     "grunt-contrib-coffee" : ""
   },
   "scripts": {
-    "doc": "docco src/lines_data_crosscheck.js"
+    "test" : "./node_modules/.bin/nodeunit test",
+    "doc"  : "docco src/lines_data_crosscheck.js"
   },
   "main"          : "lib/lines_data_crosscheck.js",
   "version"       : "0.0.1",
