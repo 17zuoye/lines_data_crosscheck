@@ -1,5 +1,6 @@
 _ = require('underscore')
 lineReader = require('line-reader')
+Set = require('set')
 
 
 class LinesDataCrosscheck
@@ -22,7 +23,7 @@ class LinesDataCrosscheck
         _.isEqual
 
     class ItemIdContent
-        constructor: (@id, @content)
+        constructor: (@id, @content) ->
 
     convert_from_line: (line1) ->
         item1 = @data_normalization_func(line1)
@@ -31,7 +32,7 @@ class LinesDataCrosscheck
 
     run: ->
         fileA_sample = reservoir_sampling(@fileA)
-        fileB_sample = fetch_sample_by_item_ids(@fileB, fileA_sample)
+        fileB_sample = fetch_sample_by_item_ids(@fileB, new Set(fileA_sample.map (item) -> item.id))
 
 
     reservoir_sampling: (file1) ->
@@ -75,3 +76,4 @@ class LinesDataCrosscheck
 
     fetch_sample_by_item_ids: (file1, item_ids) ->
         lineReader.eachLine file1, (line1) =>
+

@@ -7,6 +7,7 @@
   "dependencies"  : {
     "underscore"  : ">=1.7.0",
     "line-reader" : ">=0.2.4",
+    "set"         : "",
     "random-tools": ""
   },
   "devDependencies": {
