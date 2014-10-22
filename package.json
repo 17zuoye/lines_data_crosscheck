@@ -5,7 +5,8 @@
   "keywords"      : ["crosscheck", "json"],
   "author"        : "David Chen <mvjome@gmail.com>",
   "dependencies"  : {
-    "underscore"  : ">=1.7.0"
+    "underscore"  : ">=1.7.0",
+    "random-tools": ""
   },
   "devDependencies": {
     "coffee-script" : ">= 1.8",
