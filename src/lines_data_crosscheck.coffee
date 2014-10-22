@@ -31,8 +31,12 @@ class LinesDataCrosscheck
 
 
     run: ->
-        fileA_sample = reservoir_sampling(@fileA)
-        fileB_sample = fetch_sample_by_item_ids(@fileB, new Set(fileA_sample.map (item) -> item.id))
+        fileA_sample = reservoir_sampling(@fileA).reduce (dict, obj) ->
+                            dict[obj.id] = obj.content
+                            dict
+                        , {}
+
+        fileB_sample = fetch_sample_by_item_ids @fileB, new Set(fileA_sample.keys())
 
 
     reservoir_sampling: (file1) ->
@@ -67,7 +71,7 @@ class LinesDataCrosscheck
                     is_insert = false
 
             if is_insert
-                sample_array[insert_at_idx] = convert_from_line(line1)
+                sample_array[insert_at_idx] = @convert_from_line(line1)
             line_idx += 1
 
         # 3. 这样可以在未知具体行数的情况下, 就实现了 平稳的 随机取固定个数的测试数据。
@@ -75,5 +79,13 @@ class LinesDataCrosscheck
 
 
     fetch_sample_by_item_ids: (file1, item_ids) ->
+        sample_dict = {}
+
         lineReader.eachLine file1, (line1) =>
+            item_id1 = @fetch_item_id_func(line1)
+            if item_ids.contains(item_id1)
+                item1 = @convert_from_line(line1)
+                sample_dict[item1.id] = item.content
+
+        return sample_dict
 
