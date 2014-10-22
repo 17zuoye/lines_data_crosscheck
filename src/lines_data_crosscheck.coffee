@@ -1,6 +1,8 @@
-_ = require('underscore')
-lineReader = require('line-reader')
-Set = require('set')
+_            = require('underscore')
+lineReader   = require('line-reader')
+Set          = require('set')
+assert       = require('assert')
+jsondiff     = require('json-diff/lib/cli')
 
 
 class LinesDataCrosscheck
@@ -31,12 +33,27 @@ class LinesDataCrosscheck
 
 
     run: ->
+        # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
         fileA_sample = reservoir_sampling(@fileA).reduce (dict, obj) ->
                             dict[obj.id] = obj.content
                             dict
                         , {}
 
+        # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
         fileB_sample = fetch_sample_by_item_ids @fileB, new Set(fileA_sample.keys())
+
+        # 3. 比较两个样本是否一一对应
+        assert.equal(new Set(fileA_sample.keys()), new Set(fileB_sample.keys()))
+
+        # 4. 全部一一对比
+        [same_count, total_count] = [0, fileA_sample.length]
+        _.each fileA_sample.keys(), (item_id) ->
+            [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+            result = _.isEqual(itemA, itemB)
+            if result
+                same_count += 1
+            else
+                jsondiff(itemA, itemB)
 
 
     reservoir_sampling: (file1) ->
@@ -88,4 +105,3 @@ class LinesDataCrosscheck
                 sample_dict[item1.id] = item.content
 
         return sample_dict
-

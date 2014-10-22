@@ -8,6 +8,9 @@
     "underscore"  : ">=1.7.0",
     "line-reader" : ">=0.2.4",
     "set"         : "",
+    "assert"      : "",
+    "fast-stats"  : ">= 0.0.2",
+    "json-diff"   : "",
     "random-tools": ""
   },
   "devDependencies": {
