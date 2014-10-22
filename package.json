@@ -6,6 +6,7 @@
   "author"        : "David Chen <mvjome@gmail.com>",
   "dependencies"  : {
     "underscore"  : ">=1.7.0",
+    "line-reader" : ">=0.2.4",
     "random-tools": ""
   },
   "devDependencies": {
