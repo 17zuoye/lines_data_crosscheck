@@ -21,7 +21,7 @@ class LinesDataCrosscheck
         # diff两行数据
         @diff_items_func          = diff_items_func         ?= (a, b) -> true
 
-        # 数据规整化
+        # 数据 反序列化+规整化
         @data_normalization_func = data_normalization_func ?= (obj1) -> obj1
 
 
