@@ -9,20 +9,19 @@ class LinesDataCrosscheck
 
     constructor: (@fileA, @fileB,
                   @compare_items_count,
-                  fetch_item_id_func,
-                  diff_items_func,
-                  data_normalization_func,) ->
+                  opts) ->
         assert.ok(new String(@fileA) instanceof String)
         assert.ok(new String(@fileB) instanceof String)
+        opts ?= {}
 
         # 解析得到该行的 item_id
-        @fetch_item_id_func      = fetch_item_id_func      ?= (line1) -> line1
+        @fetch_item_id_func       = opts.fetch_item_id_func      ?= (line1) -> line1
 
         # diff两行数据
-        @diff_items_func          = diff_items_func         ?= (a, b) -> true
+        @diff_items_func          = opts.diff_items_func         ?= (a, b) -> true
 
         # 数据 反序列化+规整化
-        @data_normalization_func = data_normalization_func ?= (obj1) -> obj1
+        @data_normalization_func  = opts.data_normalization_func ?= (line1) -> line1
 
 
     class ItemIdContent
@@ -70,8 +69,8 @@ class LinesDataCrosscheck
                         curr.diff_items_func(itemA, itemB)
                 callback(null, same_count is total_count)
             ,
-            (is_same, callback) ->
-                run_callback(is_same)
+            (is_all_same, callback) ->
+                run_callback(is_all_same)
             ,
         ], (err, result) ->
             console.log(err, result)
