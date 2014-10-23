@@ -40,7 +40,6 @@ class LinesDataCrosscheck
             (callback) ->
                 # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
                 curr.reservoir_sampling curr.fileA, (sample_array) ->
-                    console.log("[sample_array]", sample_array)
                     fileA_sample = sample_array.reduce (dict, obj) ->
                                                             dict[obj.id] = obj.content
                                                             dict
@@ -69,11 +68,9 @@ class LinesDataCrosscheck
                         same_count += 1
                     else
                         curr.diff_items_func(itemA, itemB)
-                console.log("[same_count is total_count]", same_count, 'vs', total_count)
                 callback(null, same_count is total_count)
             ,
             (is_same, callback) ->
-                console.log("[is_same]", is_same)
                 run_callback(is_same)
             ,
         ], (err, result) ->
