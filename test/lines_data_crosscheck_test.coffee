@@ -1,7 +1,6 @@
 LinesDataCrosscheck = require '../src/lines_data_crosscheck'
 
 path         = require 'path'
-jsondiff     = require 'json-diff/lib/cli'
 difflet      = require('difflet')
 
 exports.LinesDataCrosscheckTest =

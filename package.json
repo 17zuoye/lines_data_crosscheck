@@ -10,7 +10,6 @@
     "set"         : "",
     "assert"      : "",
     "fast-stats"  : ">= 0.0.2",
-    "json-diff"   : "",
     "difflet"     : ">= 0.2.6",
     "random-tools": "",
     "async"       : ">= 0.9.0",
