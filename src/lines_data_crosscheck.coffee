@@ -2,7 +2,6 @@ _            = require 'underscore'
 lineReader   = require 'line-reader'
 Set          = require 'set'
 assert       = require 'assert'
-jsondiff     = require 'json-diff/lib/cli'
 async        = require 'async'
 
 
@@ -10,17 +9,17 @@ class LinesDataCrosscheck
 
     constructor: (@fileA, @fileB,
                   @compare_items_count,
-                  unserializable_func,
                   fetch_item_id_func,
+                  diff_items_func,
                   data_normalization_func,) ->
         assert.ok(new String(@fileA) instanceof String)
         assert.ok(new String(@fileB) instanceof String)
 
-        # 反序列化 单行数据 到 一个对象
-        @unserializable_func     = unserializable_func     ?= (line1) -> line1
-
         # 解析得到该行的 item_id
         @fetch_item_id_func      = fetch_item_id_func      ?= (line1) -> line1
+
+        # diff两行数据
+        @diff_items_func          = diff_items_func         ?= (a, b) -> true
 
         # 数据规整化
         @data_normalization_func = data_normalization_func ?= (obj1) -> obj1
@@ -66,23 +65,19 @@ class LinesDataCrosscheck
                 [same_count, total_count] = [0, fileA_sample.length]
                 _.each _.keys(fileA_sample), (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
-                    result = _.isEqual(itemA, itemB)
-                    if result
+                    if _.isEqual(itemA, itemB)
                         same_count += 1
                     else
-                        jsondiff(itemA, itemB)
+                        curr.diff_items_func(itemA, itemB)
                 callback(null, same_count is total_count)
             ,
             (is_same, callback) ->
+                console.log("[is_same]", is_same)
                 run_callback(is_same)
             ,
         ], (err, result) ->
             console.log(err, result)
         ,)
-
-
-
-
 
 
     reservoir_sampling: (file1, run_callback) ->

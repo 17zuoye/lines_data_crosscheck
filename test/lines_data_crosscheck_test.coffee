@@ -1,6 +1,8 @@
 LinesDataCrosscheck = require '../src/lines_data_crosscheck'
 
-path = require 'path'
+path         = require 'path'
+jsondiff     = require 'json-diff/lib/cli'
+difflet      = require('difflet')
 
 exports.LinesDataCrosscheckTest =
 
@@ -17,18 +19,18 @@ exports.LinesDataCrosscheckTest =
         fileC = "#{path.join(__dirname, 'fileC.txt')}"
 
         @same_checker = new LinesDataCrosscheck(
-                                                fileA, fileB,
-                                                1,
-                                                (line1) -> JSON.parse(line1),
+                                                fileB, fileA,
+                                                3,
                                                 (line1) -> JSON.parse(line1)['id'],
+                                                (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
                                                )
         @same_checker.run( (is_same) -> test.equal(is_same, true) )
 
         @diff_checker = new LinesDataCrosscheck(
-                                                fileA, fileC,
-                                                1,
-                                                (line1) -> JSON.parse(line1),
+                                                fileC, fileA,
+                                                3,
                                                 (line1) -> JSON.parse(line1)['id'],
+                                                (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
                                                )
         @diff_checker.run( (is_diff) -> test.equal(is_diff, false) )
 
