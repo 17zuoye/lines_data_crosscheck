@@ -21,6 +21,7 @@
     "grunt-contrib-coffee" : ""
   },
   "scripts": {
+    "preinstall" : "grunt coffee --verbose",
     "test" : "./node_modules/.bin/nodeunit test",
     "doc"  : "docco src/lines_data_crosscheck.js"
   },
