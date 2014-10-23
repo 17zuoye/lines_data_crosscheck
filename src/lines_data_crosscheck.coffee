@@ -3,6 +3,7 @@ lineReader   = require 'line-reader'
 Set          = require 'set'
 assert       = require 'assert'
 jsondiff     = require 'json-diff/lib/cli'
+async        = require 'async'
 
 
 class LinesDataCrosscheck
@@ -12,15 +13,17 @@ class LinesDataCrosscheck
                   unserializable_func,
                   fetch_item_id_func,
                   data_normalization_func,) ->
+        assert.ok(new String(@fileA) instanceof String)
+        assert.ok(new String(@fileB) instanceof String)
 
         # 反序列化 单行数据 到 一个对象
-        @unserializable_func     = unserializable_func     || (line1) -> line1
+        @unserializable_func     = unserializable_func     ?= (line1) -> line1
 
         # 解析得到该行的 item_id
-        @fetch_item_id_func      = fetch_item_id_func      || (line1) -> line1
+        @fetch_item_id_func      = fetch_item_id_func      ?= (line1) -> line1
 
         # 数据规整化
-        @data_normalization_func = data_normalization_func || (obj1) -> obj1
+        @data_normalization_func = data_normalization_func ?= (obj1) -> obj1
 
 
     class ItemIdContent
@@ -32,27 +35,45 @@ class LinesDataCrosscheck
 
 
     run: ->
-        # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
-        fileA_sample = reservoir_sampling(@fileA).reduce (dict, obj) ->
-                            dict[obj.id] = obj.content
-                            dict
-                        , {}
+        curr = this
 
-        # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
-        fileB_sample = fetch_sample_by_item_ids @fileB, new Set(fileA_sample.keys())
+        async.waterfall([
+            (callback) ->
+                # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
+                fileA_sample =  curr.reservoir_sampling(curr.fileA).reduce (dict, obj) ->
+                                                                        dict[obj.id] = obj.content
+                                                                        dict
+                                                                    , {}
+                callback(null, curr, fileA_sample)
+            ,
+            (fileA_sample, callback) ->
+                # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
+                fileB_sample = curr.fetch_sample_by_item_ids curr.fileB, new Set(_.keys(fileA_sample))
+                callback(null, fileA_sample, fileB_sample)
+            ,
+            (fileA_sample, fileB_sample, callback) ->
+                # 3. 比较两个样本是否一一对应
+                assert.equal(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample)))
+                callback(null, fileA_sample, fileB_sample)
+            ,
+            (fileA_sample, fileB_sample, callback) ->
+                # 4. 全部一一对比
+                [same_count, total_count] = [0, fileA_sample.length]
+                _.each fileA_sample.keys(), (item_id) ->
+                    [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+                    result = _.isEqual(itemA, itemB)
+                    if result
+                        same_count += 1
+                    else
+                        jsondiff(itemA, itemB)
+                callback(null, 'done')
+            ,
+        ], (err, result) ->
+            console.log(err, result)
+        ,)
 
-        # 3. 比较两个样本是否一一对应
-        assert.equal(new Set(fileA_sample.keys()), new Set(fileB_sample.keys()))
 
-        # 4. 全部一一对比
-        [same_count, total_count] = [0, fileA_sample.length]
-        _.each fileA_sample.keys(), (item_id) ->
-            [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
-            result = _.isEqual(itemA, itemB)
-            if result
-                same_count += 1
-            else
-                jsondiff(itemA, itemB)
+
 
 
     reservoir_sampling: (file1) ->
@@ -71,6 +92,7 @@ class LinesDataCrosscheck
 
         # Reference from wikipedia
         lineReader.eachLine file1, (line1) =>
+            console.log("[line1]", line1)
             is_insert = true
 
             # 1. 把前 @compare_items_count 个 items 放到候选里。
