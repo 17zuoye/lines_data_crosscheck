@@ -3,6 +3,11 @@ LinesDataCrosscheck = require '../src/lines_data_crosscheck'
 path         = require 'path'
 difflet      = require('difflet')
 
+opts = {
+            "fetch_item_id_func" : (line1) -> JSON.parse(line1)['id'],
+            "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
+        }
+
 exports.LinesDataCrosscheckTest =
 
     "same test": (test) ->
@@ -11,11 +16,7 @@ exports.LinesDataCrosscheckTest =
 
         @same_checker = new LinesDataCrosscheck(
                                                 fileB, fileA,
-                                                3,
-                                                {
-                                                    "fetch_item_id_func" : (line1) -> JSON.parse(line1)['id'],
-                                                    "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
-                                                }
+                                                3, opts
                                                )
         @same_checker.run(
             (is_same) ->
@@ -30,11 +31,7 @@ exports.LinesDataCrosscheckTest =
 
         @diff_checker = new LinesDataCrosscheck(
                                                 fileC, fileA,
-                                                3,
-                                                {
-                                                    "fetch_item_id_func" : (line1) -> JSON.parse(line1)['id'],
-                                                    "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
-                                                }
+                                                3, opts
                                                )
         @diff_checker.run(
           (is_same) ->
