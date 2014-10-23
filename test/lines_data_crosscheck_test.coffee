@@ -24,4 +24,14 @@ exports.LinesDataCrosscheckTest =
                                                )
         @same_checker.run( (is_same) -> test.equal(is_same, true) )
 
+        @diff_checker = new LinesDataCrosscheck(
+                                                fileA, fileC,
+                                                1,
+                                                (line1) -> JSON.parse(line1),
+                                                (line1) -> JSON.parse(line1)['id'],
+                                               )
+        @diff_checker.run( (is_diff) -> test.equal(is_diff, false) )
+
+        test.ok(@same_checker)
+        test.ok(@diff_checker)
         test.done()
