@@ -24,7 +24,7 @@ exports.LinesDataCrosscheckTest =
                                                 (line1) -> JSON.parse(line1)['id'],
                                                 (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
                                                )
-        @same_checker.run( (is_same) -> test.equal(is_same, true) )
+        @same_checker.run( (is_same) -> test.equal(is_same, "no") )
 
         @diff_checker = new LinesDataCrosscheck(
                                                 fileC, fileA,
@@ -32,7 +32,7 @@ exports.LinesDataCrosscheckTest =
                                                 (line1) -> JSON.parse(line1)['id'],
                                                 (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
                                                )
-        @diff_checker.run( (is_diff) -> test.equal(is_diff, false) )
+        @diff_checker.run( (is_diff) -> test.equal(is_diff, "no") )
 
         test.ok(@same_checker)
         test.ok(@diff_checker)

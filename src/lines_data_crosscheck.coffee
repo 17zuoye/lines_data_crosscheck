@@ -45,7 +45,6 @@ class LinesDataCrosscheck
                                                             dict[obj.id] = obj.content
                                                             dict
                                                         , {}
-
                     callback(null, fileA_sample)
             ,
             (fileA_sample, callback) ->
@@ -62,13 +61,15 @@ class LinesDataCrosscheck
             ,
             (fileA_sample, fileB_sample, callback) ->
                 # 4. 全部一一对比
-                [same_count, total_count] = [0, fileA_sample.length]
-                _.each _.keys(fileA_sample), (item_id) ->
+                item_ids = _.keys(fileA_sample)
+                [same_count, total_count] = [0, item_ids.length]
+                _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
                     if _.isEqual(itemA, itemB)
                         same_count += 1
                     else
                         curr.diff_items_func(itemA, itemB)
+                console.log("[same_count is total_count]", same_count, 'vs', total_count)
                 callback(null, same_count is total_count)
             ,
             (is_same, callback) ->
