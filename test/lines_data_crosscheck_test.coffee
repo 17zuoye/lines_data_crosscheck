@@ -14,13 +14,14 @@ exports.LinesDataCrosscheckTest =
     "complete test": (test) ->
         fileA = "#{path.join(__dirname, 'fileA.txt')}"
         fileB = "#{path.join(__dirname, 'fileB.txt')}"
-        @checker = new LinesDataCrosscheck(
-                                            fileA, fileB,
-                                            1,
-                                            (line1) -> JSON.parse(line1),
-                                            (line1) -> JSON.parse(line1)['id'],
-                                          )
-        @checker.run()
+        fileC = "#{path.join(__dirname, 'fileC.txt')}"
 
-        test.ok(@checker)
+        @same_checker = new LinesDataCrosscheck(
+                                                fileA, fileB,
+                                                1,
+                                                (line1) -> JSON.parse(line1),
+                                                (line1) -> JSON.parse(line1)['id'],
+                                               )
+        @same_checker.run( (is_same) -> test.equal(is_same, true) )
+
         test.done()

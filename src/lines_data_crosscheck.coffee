@@ -34,7 +34,7 @@ class LinesDataCrosscheck
         ItemIdContent(@fetch_item_id_func(item1), item1)
 
 
-    run: ->
+    run: (run_callback) ->
         curr = this
 
         async.waterfall([
@@ -44,7 +44,7 @@ class LinesDataCrosscheck
                                                                         dict[obj.id] = obj.content
                                                                         dict
                                                                     , {}
-                callback(null, curr, fileA_sample)
+                callback(null, fileA_sample)
             ,
             (fileA_sample, callback) ->
                 # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
@@ -53,24 +53,29 @@ class LinesDataCrosscheck
             ,
             (fileA_sample, fileB_sample, callback) ->
                 # 3. 比较两个样本是否一一对应
-                assert.equal(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample)))
+                #assert.equal(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample)))
                 callback(null, fileA_sample, fileB_sample)
             ,
             (fileA_sample, fileB_sample, callback) ->
                 # 4. 全部一一对比
                 [same_count, total_count] = [0, fileA_sample.length]
-                _.each fileA_sample.keys(), (item_id) ->
+                _.each _.keys(fileA_sample), (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
                     result = _.isEqual(itemA, itemB)
                     if result
                         same_count += 1
                     else
                         jsondiff(itemA, itemB)
-                callback(null, 'done')
+                callback(null, same_count is total_count)
+            ,
+            (is_same, callback) ->
+                run_callback(is_same)
+                console.log("\n\n[end diff] ...")
             ,
         ], (err, result) ->
             console.log(err, result)
         ,)
+
 
 
 
@@ -88,28 +93,30 @@ class LinesDataCrosscheck
 
         randomInt = require('random-tools').randomInt
 
-        [line_idx, sample_array] = [0, []]
+        [line_idx, sample_array] = [1, []]
 
         # Reference from wikipedia
         lineReader.eachLine file1, (line1) =>
-            console.log("[line1]", line1)
+            console.log("[lineReader line1]", line1)
             is_insert = true
 
             # 1. 把前 @compare_items_count 个 items 放到候选里。
-            if line_idx < @compare_items_count
+            if line_idx <= @compare_items_count
                 insert_at_idx = line_idx
             # 2. 在 当前遍历过的行数里 进行随机, 看看用当前行 是否去替换其中一个。
             #    但是得保证在整个遍历过程中 每行 都机会均等。
             else
                 # n/k 概率选进来。   随机踢，随机选。
-                random_idx = randomInt(0, line_idx)
+                random_idx = randomInt(line_idx, 0)
                 if random_idx < @compare_items_count
                     insert_at_idx = random_idx
                 else
                     is_insert = false
 
             if is_insert
+                console.log("[@convert_from_line(line1)]", @convert_from_line(line1))
                 sample_array[insert_at_idx] = @convert_from_line(line1)
+
             line_idx += 1
 
         # 3. 这样可以在未知具体行数的情况下, 就实现了 平稳的 随机取固定个数的测试数据。
