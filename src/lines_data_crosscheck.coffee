@@ -4,6 +4,7 @@ Set          = require 'set'
 assert       = require 'assert'
 async        = require 'async'
 
+# TODO sync output result to disk
 
 class LinesDataCrosscheck
 
@@ -30,11 +31,11 @@ class LinesDataCrosscheck
         @print_two_files_info()
 
     class ItemIdContent
-        constructor: (@id, @content) ->
+        constructor: (@id, @content, @line_num) ->
 
-    convert_from_line: (line1) ->
+    convert_from_line: (line1, line_num) ->
         item1 = @data_normalization_func(line1)
-        new ItemIdContent(@fetch_item_id_func(item1), item1)
+        new ItemIdContent(@fetch_item_id_func(item1), item1, line_num)
 
 
     run: (run_callback) ->
@@ -111,11 +112,11 @@ class LinesDataCrosscheck
         #console.log("pace", pace)
 
         # Reference from wikipedia
-        idx1 = 0
+        line_num1 = 0
         lineReader.eachLine file1, (line1, is_end) =>
-            idx1 += 1
-            if (idx1 % 1000) == 0
-                console.log(idx1)
+            line_num1 += 1
+            if (line_num1 % 1000) == 0
+                console.log(line_num1)
 
             #console.log("[", line1.length, "]", line1)
             #pace.op(line1.length+1)
@@ -144,7 +145,7 @@ class LinesDataCrosscheck
                     is_insert = false
 
             if is_insert
-                sample_array[insert_at_idx] = curr.convert_from_line(line1)
+                sample_array[insert_at_idx] = curr.convert_from_line(line1, line_num1)
 
             line_idx += 1
 
@@ -156,10 +157,15 @@ class LinesDataCrosscheck
     fetch_sample_by_item_ids: (file1, item_ids, run_callback) ->
         [sample_dict, curr] = [{}, this]
 
+        line_num1 = 0
         lineReader.eachLine file1, (line1, is_end) =>
+            line_num1 += 1
+            if (line_num1 % 1000) == 0
+                console.log(line_num1)
+
             item_id1 = curr.fetch_item_id_func(line1)
             if item_ids.contains(item_id1)
-                item1 = curr.convert_from_line(line1)
+                item1 = curr.convert_from_line(line1, line_num1)
                 sample_dict[item1.id] = item1.content
             if is_end
                 run_callback(sample_dict)
