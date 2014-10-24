@@ -2,9 +2,14 @@ LinesDataCrosscheck = require '../src/lines_data_crosscheck'
 
 path         = require 'path'
 difflet      = require('difflet')
+_            = require 'underscore'
+
+fetch_item_id_func = (line1) ->
+                _.each(Array(15), -> Array(Math.pow(10, 7)).join("=").length) # slow cpu
+                JSON.parse(line1)['id']
 
 opts = {
-            "fetch_item_id_func" : (line1) -> JSON.parse(line1)['id'],
+            "fetch_item_id_func" : (line1) -> fetch_item_id_func(line1),
             "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b))),
         }
 

@@ -97,37 +97,20 @@ class LinesDataCrosscheck
 
         [line_idx, sample_array, curr] = [1, [], this]
 
-        """
         ProgressBar = require('progress')
-        bar = new ProgressBar("[processing] " + @fileA, {
-            complete    : "=",
-            incomplete  : " ",
-            width       : 1,
+        bar = new ProgressBar("processing [:bar :percent] [estimated completion time]=:etas [time elapsed]=:elapsed  ", {
+            stream      : process.stdout,
             total       : @fileA_size
         })
-        """
-
-        #console.log(bar)
-        #pace = require('pace')(@fileA_size)
-        #console.log("pace", pace)
 
         # Reference from wikipedia
         line_num1 = 0
         lineReader.eachLine file1, (line1, is_end) =>
             line_num1 += 1
-            if (line_num1 % 1000) == 0
-                console.log(line_num1)
 
-            #console.log("[", line1.length, "]", line1)
-            #pace.op(line1.length+1)
-            #_.each(Array(1), -> Array(Math.pow(10, 8)).join("=").length)
-
-            """
             bar.tick(line1.length+1) # plus "\n"
-
             if bar.complete
                 console.log('\ncomplete from lineReader!\n')
-            """
 
             is_insert = true
 
