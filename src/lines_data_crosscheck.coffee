@@ -99,10 +99,9 @@ class LinesDataCrosscheck
         [line_idx, sample_array, curr] = [1, [], this]
 
         # Reference from wikipedia
-        [line_num1, bar] = [0, @new_progress_bar()]
+        bar = new Bar(@fileA_size, 'reservoir_sampling')
         lineReader.eachLine file1, (line1, is_end) =>
-            line_num1 += 1
-            bar.tick(line1.length+1) # plus "\n"
+            bar.update(line1.length+1) # plus "\n"
 
             is_insert = true
 
@@ -120,7 +119,7 @@ class LinesDataCrosscheck
                     is_insert = false
 
             if is_insert
-                sample_array[insert_at_idx] = curr.convert_from_line(line1, line_num1)
+                sample_array[insert_at_idx] = curr.convert_from_line(line1, bar.line_num)
 
             line_idx += 1
 
@@ -132,14 +131,13 @@ class LinesDataCrosscheck
     fetch_sample_by_item_ids: (file1, item_ids, run_callback) ->
         [sample_dict, curr] = [{}, this]
 
-        [line_num1, bar] = [0, @new_progress_bar()]
+        bar = new Bar(@fileA_size, 'fetch_sample_by_item_ids')
         lineReader.eachLine file1, (line1, is_end) =>
-            line_num1 += 1
-            bar.tick(line1.length+1) # plus "\n"
+            bar.update(line1.length+1) # plus "\n"
 
             item_id1 = curr.fetch_item_id_func(line1)
             if item_ids.contains(item_id1)
-                item1 = curr.convert_from_line(line1, line_num1)
+                item1 = curr.convert_from_line(line1, bar.line_num)
                 sample_dict[item1.id] = item1.content
             if is_end
                 run_callback(sample_dict)
@@ -157,11 +155,29 @@ class LinesDataCrosscheck
         console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
         console.log(table.toString(), "\n")
 
-    new_progress_bar : ->
-        new ProgressBar("processing [:bar :percent] [estimated completion time]=:etas [time elapsed]=:elapsed  ", {
-            stream      : process.stdout,
-            total       : @fileA_size
-        })
+    class Bar
+        constructor: (@total_size, @fmt) ->
+            @line_num = 0
+            @current_size = 0
+            @min_chunk_size = @total_size / 100 / 4
+
+            @bar = new ProgressBar(@fmt + " [:bar :percent] [estimated completion time]=:etas [time elapsed]=:elapsed  ", {
+                        stream      : process.stdout,
+                        total       : @total_size
+                    })
+
+        update: (str_size) ->
+            @line_num     += 1
+            @current_size += str_size
+
+            is_reach_size = @current_size > @min_chunk_size
+            is_end        = @total_size - @bar.curr < @min_chunk_size
+
+            if is_reach_size or is_end
+                @bar.tick(@current_size)
+                @current_size = 0
+            if @bar.complete
+                console.log("\n")
 
 
 module.exports = LinesDataCrosscheck
