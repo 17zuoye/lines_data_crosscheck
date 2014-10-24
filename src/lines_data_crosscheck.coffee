@@ -3,6 +3,7 @@ lineReader   = require 'line-reader'
 Set          = require 'set'
 assert       = require 'assert'
 async        = require 'async'
+ProgressBar  = require('progress')
 
 # TODO sync output result to disk
 
@@ -97,20 +98,11 @@ class LinesDataCrosscheck
 
         [line_idx, sample_array, curr] = [1, [], this]
 
-        ProgressBar = require('progress')
-        bar = new ProgressBar("processing [:bar :percent] [estimated completion time]=:etas [time elapsed]=:elapsed  ", {
-            stream      : process.stdout,
-            total       : @fileA_size
-        })
-
         # Reference from wikipedia
-        line_num1 = 0
+        [line_num1, bar] = [0, @new_progress_bar()]
         lineReader.eachLine file1, (line1, is_end) =>
             line_num1 += 1
-
             bar.tick(line1.length+1) # plus "\n"
-            if bar.complete
-                console.log('\ncomplete from lineReader!\n')
 
             is_insert = true
 
@@ -140,11 +132,10 @@ class LinesDataCrosscheck
     fetch_sample_by_item_ids: (file1, item_ids, run_callback) ->
         [sample_dict, curr] = [{}, this]
 
-        line_num1 = 0
+        [line_num1, bar] = [0, @new_progress_bar()]
         lineReader.eachLine file1, (line1, is_end) =>
             line_num1 += 1
-            if (line_num1 % 1000) == 0
-                console.log(line_num1)
+            bar.tick(line1.length+1) # plus "\n"
 
             item_id1 = curr.fetch_item_id_func(line1)
             if item_ids.contains(item_id1)
@@ -166,6 +157,11 @@ class LinesDataCrosscheck
         console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
         console.log(table.toString(), "\n")
 
+    new_progress_bar : ->
+        new ProgressBar("processing [:bar :percent] [estimated completion time]=:etas [time elapsed]=:elapsed  ", {
+            stream      : process.stdout,
+            total       : @fileA_size
+        })
 
 
 module.exports = LinesDataCrosscheck
