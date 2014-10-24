@@ -23,6 +23,11 @@ class LinesDataCrosscheck
         # 数据 反序列化+规整化
         @data_normalization_func  = opts.data_normalization_func ?= (line1) -> line1
 
+        # 获取和打印文件信息
+        fs          = require "fs"
+        @fileA_size = fs.statSync(@fileA)["size"]
+        @fileB_size = fs.statSync(@fileB)["size"]
+        @print_two_files_info()
 
     class ItemIdContent
         constructor: (@id, @content) ->
@@ -33,8 +38,6 @@ class LinesDataCrosscheck
 
 
     run: (run_callback) ->
-        @print_two_files_info()
-
         curr = this
 
         async.waterfall([
@@ -93,8 +96,38 @@ class LinesDataCrosscheck
 
         [line_idx, sample_array, curr] = [1, [], this]
 
+        """
+        ProgressBar = require('progress')
+        bar = new ProgressBar("[processing] " + @fileA, {
+            complete    : "=",
+            incomplete  : " ",
+            width       : 1,
+            total       : @fileA_size
+        })
+        """
+
+        #console.log(bar)
+        #pace = require('pace')(@fileA_size)
+        #console.log("pace", pace)
+
         # Reference from wikipedia
+        idx1 = 0
         lineReader.eachLine file1, (line1, is_end) =>
+            idx1 += 1
+            if (idx1 % 1000) == 0
+                console.log(idx1)
+
+            #console.log("[", line1.length, "]", line1)
+            #pace.op(line1.length+1)
+            #_.each(Array(1), -> Array(Math.pow(10, 8)).join("=").length)
+
+            """
+            bar.tick(line1.length+1) # plus "\n"
+
+            if bar.complete
+                console.log('\ncomplete from lineReader!\n')
+            """
+
             is_insert = true
 
             # 1. 把前 @compare_items_count 个 items 放到候选里。
@@ -133,18 +166,17 @@ class LinesDataCrosscheck
 
 
     print_two_files_info :  ->
-        fs       = require "fs"
         filesize = require "filesize"
-        fileinfo = (file1) -> filesize fs.statSync(file1)["size"]
 
         table    = new (require('cli-table'))({
                       head : ["Filepath", "Filesize"]
                     })
-        table.push([@fileA, fileinfo(@fileA)],
-                   [@fileB, fileinfo(@fileB)])
+        table.push([@fileA, filesize(@fileA_size)],
+                   [@fileB, filesize(@fileB_size)])
 
         console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
         console.log(table.toString(), "\n")
+
 
 
 module.exports = LinesDataCrosscheck
