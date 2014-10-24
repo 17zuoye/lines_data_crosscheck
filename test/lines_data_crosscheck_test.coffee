@@ -38,5 +38,3 @@ exports.LinesDataCrosscheckTest =
             test.equal(is_same, false)
             test.done()
         )
-
-

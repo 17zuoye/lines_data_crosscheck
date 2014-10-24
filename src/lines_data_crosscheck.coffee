@@ -33,6 +33,8 @@ class LinesDataCrosscheck
 
 
     run: (run_callback) ->
+        @print_two_files_info()
+
         curr = this
 
         async.waterfall([
@@ -128,6 +130,21 @@ class LinesDataCrosscheck
                 sample_dict[item1.id] = item1.content
             if is_end
                 run_callback(sample_dict)
+
+
+    print_two_files_info :  ->
+        fs       = require "fs"
+        filesize = require "filesize"
+        fileinfo = (file1) -> filesize fs.statSync(file1)["size"]
+
+        table    = new (require('cli-table'))({
+                      head : ["Filepath", "Filesize"]
+                    })
+        table.push([@fileA, fileinfo(@fileA)],
+                   [@fileB, fileinfo(@fileB)])
+
+        console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
+        console.log(table.toString(), "\n")
 
 
 module.exports = LinesDataCrosscheck
