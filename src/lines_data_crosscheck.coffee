@@ -112,7 +112,7 @@ class LinesDataCrosscheck
             #    但是得保证在整个遍历过程中 每行 都机会均等。
             else
                 # n/k 概率选进来。   随机踢，随机选。
-                random_idx = randomInt(line_idx, 0)
+                random_idx = randomInt(line_idx, 1)
                 if random_idx < curr.compare_items_count
                     insert_at_idx = random_idx
                 else
@@ -157,7 +157,8 @@ class LinesDataCrosscheck
 
     class Bar
         constructor: (@total_size, @fmt) ->
-            @line_num = 0
+            @line_num = 0 # 提供给外部使用
+
             @current_size = 0
             @min_chunk_size = @total_size / 100 / 4
 
@@ -167,6 +168,7 @@ class LinesDataCrosscheck
                     })
 
         update: (str_size) ->
+            # 优化 @bar.tick 每次都渲染
             @line_num     += 1
             @current_size += str_size
 
