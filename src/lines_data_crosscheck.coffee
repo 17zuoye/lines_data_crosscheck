@@ -45,12 +45,8 @@ class LinesDataCrosscheck
         async.waterfall([
             (callback) ->
                 # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
-                curr.reservoir_sampling curr.fileA, (sample_array) ->
-                    fileA_sample = sample_array.reduce (dict, obj) ->
-                                                            dict[obj.id] = obj
-                                                            dict
-                                                        , {}
-                    callback(null, fileA_sample)
+                curr.reservoir_sampling curr.fileA, (fileA_sample) ->
+                                                        callback(null, fileA_sample)
             ,
             (fileA_sample, callback) ->
                 # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
@@ -126,7 +122,11 @@ class LinesDataCrosscheck
 
             if is_end
                 # 3. 这样可以在未知具体行数的情况下, 就实现了 平稳的 随机取固定个数的测试数据。
-                run_callback(sample_array)
+                fileA_sample = sample_array.reduce (dict, obj) ->
+                                                        dict[obj.id] = obj
+                                                        dict
+                                                    , {}
+                run_callback(fileA_sample)
 
 
     fetch_sample_by_item_ids: (file1, item_ids, run_callback) ->
