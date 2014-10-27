@@ -7,7 +7,6 @@ Table        = require 'cli-table'
 Bar          = require './bar'
 require 'coffee-errors'
 
-# TODO with cache fetch items
 
 class LinesDataCrosscheck
 
@@ -26,6 +25,9 @@ class LinesDataCrosscheck
 
         # 数据 反序列化+规整化
         @data_normalization_func  = opts.data_normalization_func ?= (line1) -> line1
+
+        # 过滤一些元素
+        @filter_func              = opts.filter_func             ?= (line1) -> false
 
         # 获取和打印文件信息
         fs          = require "fs"
@@ -102,7 +104,9 @@ class LinesDataCrosscheck
 
         # Cloudera 也有介绍文章和对应实现。
         # http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm/
-        # https://github.com/cloudera/oryx/blob/7d9b3e2e7331b54c7744fd06038ae40c202e56e4/computation-common/src/main/java/com/cloudera/oryx/computation/common/sample/ReservoirSampling.java
+        #
+        # https://github.com/cloudera/oryx/blob/7d9b3e2e7331b54c7744fd06038ae40c202e56e4/
+        # computation-common/src/main/java/com/cloudera/oryx/computation/common/sample/ReservoirSampling.java
 
         # 以下优化目的只是为了省 一遍取文件行数 的IO。
 
@@ -114,6 +118,10 @@ class LinesDataCrosscheck
         bar = new Bar(@fileA_size, 'reservoir_sampling')
         lineReader.eachLine file1, (line1, is_end) =>
             bar.update(line1.length+1) # plus "\n"
+
+            # 选择有些元素不进入结果，应该只是均等地给其他通过的元素增加了一些概率。
+            if curr.filter_func(line1)
+                return
 
             is_insert = true
 
@@ -129,6 +137,12 @@ class LinesDataCrosscheck
                     insert_at_idx = random_idx
                 else
                     is_insert = false
+
+                # 分两步来理解 [keep, remove]
+                # 1. 先是 remove ，为了保障对每一个元素都是公平的，所以在任何一步停下，他们的概率都是均等的。
+                # 2. 后是 keep, 不管时间的发生顺序，抽签的最后一个就不用抽了。而这里是每个元素都有一定的概率。
+
+                # 直观验证测试方法 就是看看最后两个文件选出来的行数在统计上是否分布均匀。
 
             if is_insert
                 sample_array[insert_at_idx] = curr.convert_from_line(line1, bar.line_num)

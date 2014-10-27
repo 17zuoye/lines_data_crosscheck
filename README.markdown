@@ -1,6 +1,6 @@
-lines_data_crosscheck
+sample_diff
 ====================================
-Crosscheck lines of data.
+Sample diff
 
 
 INSTALL
