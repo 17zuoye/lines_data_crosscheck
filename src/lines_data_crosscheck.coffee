@@ -5,7 +5,9 @@ assert       = require 'assert'
 async        = require 'async'
 Table        = require 'cli-table'
 Bar          = require './bar'
+require 'coffee-errors'
 
+# TODO with cache fetch items
 
 class LinesDataCrosscheck
 
@@ -67,11 +69,23 @@ class LinesDataCrosscheck
                 [curr.same_count, total_count] = [0, item_ids.length]
                 _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+
+                    if itemA is undefined
+                        console.log("item A is not found")
+                    if itemB is undefined
+                        console.log("item B is not found")
+
                     console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
-                    if _.isEqual(curr.data_normalization_func(itemA.content), curr.data_normalization_func(itemB.content))
-                        curr.same_count += 1
-                    else
-                        curr.diff_items_func(itemA.content, itemB.content)
+
+                    try # Compact with user defined functions have exceptions
+                        if _.isEqual(itemA.content, itemB.content)
+                            curr.same_count += 1
+                        else
+                            curr.diff_items_func(itemA.content, itemB.content)
+                    catch err
+                        console.log(err, "\n")
+                        console.log("two items are: ", [itemA, itemB])
+
                 callback(null, curr.same_count is total_count)
             ,
             (is_all_same, callback) ->
