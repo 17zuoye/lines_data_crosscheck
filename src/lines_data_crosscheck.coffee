@@ -3,6 +3,7 @@ lineReader   = require 'line-reader'
 Set          = require 'set'
 assert       = require 'assert'
 async        = require 'async'
+Table        = require 'cli-table'
 Bar          = require './bar'
 
 
@@ -40,6 +41,7 @@ class LinesDataCrosscheck
 
     run: (run_callback) ->
         curr = this
+        curr.start_time = new Date()
 
         async.waterfall([
             (callback) ->
@@ -62,23 +64,23 @@ class LinesDataCrosscheck
             (fileA_sample, fileB_sample, callback) ->
                 # 4. 全部一一对比
                 item_ids = _.keys(fileA_sample)
-                [same_count, total_count] = [0, item_ids.length]
+                [curr.same_count, total_count] = [0, item_ids.length]
                 _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
                     console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
                     if _.isEqual(curr.data_normalization_func(itemA.content), curr.data_normalization_func(itemB.content))
-                        same_count += 1
+                        curr.same_count += 1
                     else
                         curr.diff_items_func(itemA.content, itemB.content)
-                callback(null, same_count is total_count)
+                callback(null, curr.same_count is total_count)
             ,
             (is_all_same, callback) ->
                 run_callback(is_all_same)
+                curr.print_process_summary()
             ,
         ], (err, result) ->
             console.log(err, result)
         ,)
-
 
     reservoir_sampling: (file1, run_callback) ->
         # 参考文章。感谢 @晓光 提示。
@@ -92,7 +94,7 @@ class LinesDataCrosscheck
 
         randomInt = require('random-tools').randomInt
 
-        [line_idx, sample_array, curr] = [1, [], this]
+        [sample_array, curr] = [[], this]
 
         # Reference from wikipedia
         bar = new Bar(@fileA_size, 'reservoir_sampling')
@@ -102,13 +104,13 @@ class LinesDataCrosscheck
             is_insert = true
 
             # 1. 把前 @compare_items_count 个 items 放到候选里。
-            if line_idx <= curr.compare_items_count
-                insert_at_idx = line_idx
+            if bar.line_num <= curr.compare_items_count
+                insert_at_idx = bar.line_num
             # 2. 在 当前遍历过的行数里 进行随机, 看看用当前行 是否去替换其中一个。
             #    但是得保证在整个遍历过程中 每行 都机会均等。
             else
                 # n/k 概率选进来。   随机踢，随机选。
-                random_idx = randomInt(line_idx, 1)
+                random_idx = randomInt(bar.line_num, 1)
                 if random_idx < curr.compare_items_count
                     insert_at_idx = random_idx
                 else
@@ -117,14 +119,13 @@ class LinesDataCrosscheck
             if is_insert
                 sample_array[insert_at_idx] = curr.convert_from_line(line1, bar.line_num)
 
-            line_idx += 1
-
             if is_end
                 # 3. 这样可以在未知具体行数的情况下, 就实现了 平稳的 随机取固定个数的测试数据。
                 fileA_sample = sample_array.reduce (dict, obj) ->
                                                         dict[obj.id] = obj
                                                         dict
                                                     , {}
+                curr.fileA_items_count = bar.line_num
                 run_callback(fileA_sample)
 
 
@@ -141,12 +142,13 @@ class LinesDataCrosscheck
                 sample_dict[item1.id] = item1
             if is_end
                 run_callback(sample_dict)
+                curr.fileB_items_count = bar.line_num
 
 
     print_two_files_info :  ->
         filesize = require "filesize"
 
-        table    = new (require('cli-table'))({
+        table    = new Table({
                       head : ["Filepath", "Filesize"]
                     })
         table.push([@fileA, filesize(@fileA_size)],
@@ -156,7 +158,14 @@ class LinesDataCrosscheck
         console.log(table.toString(), "\n")
 
     print_process_summary : ->
-        console.log time_spend + fileA_items_size + fileB_items_size
-        console.log sample_size + diff_size
+        HumanizeTime = require('humanize-time')
+        [table, curr] = [new Table(), this]
+        table.push(["time spent", HumanizeTime(new Date() - curr.start_time)])
+        table.push([curr.fileA + " items count", curr.fileA_items_count])
+        table.push([curr.fileB + " items count", curr.fileB_items_count])
+        table.push(["sample count", curr.compare_items_count])
+        table.push(["diff   count", curr.compare_items_count - curr.same_count])
+        table.push(["same   count", curr.same_count])
+        console.log(table.toString(), "\n")
 
 module.exports = LinesDataCrosscheck
