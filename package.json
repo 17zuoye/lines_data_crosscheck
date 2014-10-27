@@ -1,7 +1,7 @@
 {
-  "name"          : "lines_data_crosscheck",
-  "description"   : "Crosscheck lines of data.",
-  "url"           : "https://github.com/17zuoye/lines_data_crosscheck",
+  "name"          : "sample_diff",
+  "description"   : "Sample diff.",
+  "url"           : "https://github.com/17zuoye/sample_diff",
   "keywords"      : ["crosscheck", "json"],
   "author"        : "David Chen <mvjome@gmail.com>",
   "dependencies"  : {
@@ -28,13 +28,13 @@
   "scripts": {
     "preinstall" : "grunt coffee --verbose",
     "test" : "./node_modules/.bin/nodeunit test",
-    "doc"  : "docco src/lines_data_crosscheck.js"
+    "doc"  : "docco src/sample_diff.js"
   },
-  "main"          : "lib/lines_data_crosscheck.js",
+  "main"          : "lib/sample_diff.js",
   "version"       : "0.0.1",
   "license"       : "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/17zuoye/lines_data_crosscheck.git"
+    "url": "https://github.com/17zuoye/sample_diff.git"
   }
 }

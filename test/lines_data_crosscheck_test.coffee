@@ -1,4 +1,4 @@
-LinesDataCrosscheck = require '../src/lines_data_crosscheck'
+SampleDiff = require '../src/sample_diff'
 
 path         = require 'path'
 difflet      = require('difflet')
@@ -13,13 +13,13 @@ opts = {
             "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b)), "\n"),
         }
 
-exports.LinesDataCrosscheckTest =
+exports.SampleDiffTest =
 
     "same test": (test) ->
         fileA = "#{path.join(__dirname, 'fileA.txt')}"
         fileB = "#{path.join(__dirname, 'fileB.txt')}"
 
-        @same_checker = new LinesDataCrosscheck(
+        @same_checker = new SampleDiff(
                                                 fileB, fileA,
                                                 3, opts
                                                )
@@ -34,7 +34,7 @@ exports.LinesDataCrosscheckTest =
         fileA = "#{path.join(__dirname, 'fileA.txt')}"
         fileC = "#{path.join(__dirname, 'fileC.txt')}"
 
-        @diff_checker = new LinesDataCrosscheck(
+        @diff_checker = new SampleDiff(
                                                 fileC, fileA,
                                                 3, opts
                                                )
