@@ -47,7 +47,7 @@ class LinesDataCrosscheck
                 # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
                 curr.reservoir_sampling curr.fileA, (sample_array) ->
                     fileA_sample = sample_array.reduce (dict, obj) ->
-                                                            dict[obj.id] = obj.content
+                                                            dict[obj.id] = obj
                                                             dict
                                                         , {}
                     callback(null, fileA_sample)
@@ -70,10 +70,11 @@ class LinesDataCrosscheck
                 [same_count, total_count] = [0, item_ids.length]
                 _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+                    console.log("\n[line num] FIRST:" + itemA.id + " SECOND:" + itemB.id)
                     if _.isEqual(itemA, itemB)
                         same_count += 1
                     else
-                        curr.diff_items_func(itemA, itemB)
+                        curr.diff_items_func(itemA.content, itemB.content)
                 callback(null, same_count is total_count)
             ,
             (is_all_same, callback) ->
@@ -138,7 +139,7 @@ class LinesDataCrosscheck
             item_id1 = curr.fetch_item_id_func(line1)
             if item_ids.contains(item_id1)
                 item1 = curr.convert_from_line(line1, bar.line_num)
-                sample_dict[item1.id] = item1.content
+                sample_dict[item1.id] = item1
             if is_end
                 run_callback(sample_dict)
 
