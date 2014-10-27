@@ -4,7 +4,8 @@ module.exports = (grunt) ->
     coffee:
       compile:
         files:
-          'lib/lines_data_crosscheck.js': ['src/*.coffee']
+          'lib/lines_data_crosscheck.js'   : ['src/lines_data_crosscheck.coffee'],
+          'lib/bar.js'                     : ['src/bar.coffee'],
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
 

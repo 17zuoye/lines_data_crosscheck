@@ -5,7 +5,6 @@ assert       = require 'assert'
 async        = require 'async'
 Bar          = require './bar'
 
-# TODO sync output result to disk
 
 class LinesDataCrosscheck
 
@@ -66,8 +65,8 @@ class LinesDataCrosscheck
                 [same_count, total_count] = [0, item_ids.length]
                 _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
-                    console.log("\n[line num] FIRST:" + itemA.id + " SECOND:" + itemB.id)
-                    if _.isEqual(itemA, itemB)
+                    console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
+                    if _.isEqual(curr.data_normalization_func(itemA.content), curr.data_normalization_func(itemB.content))
                         same_count += 1
                     else
                         curr.diff_items_func(itemA.content, itemB.content)
@@ -155,5 +154,9 @@ class LinesDataCrosscheck
 
         console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
         console.log(table.toString(), "\n")
+
+    print_process_summary : ->
+        console.log time_spend + fileA_items_size + fileB_items_size
+        console.log sample_size + diff_size
 
 module.exports = LinesDataCrosscheck
