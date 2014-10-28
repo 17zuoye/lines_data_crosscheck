@@ -1,8 +1,8 @@
 {
-  "name"          : "sample_diff",
+  "name"          : "sample-diff",
   "description"   : "Sample diff.",
-  "url"           : "https://github.com/17zuoye/sample_diff",
-  "keywords"      : ["crosscheck", "json"],
+  "url"           : "https://github.com/17zuoye/sample-diff",
+  "keywords"      : ["sample", "diff", "json"],
   "author"        : "David Chen <mvjome@gmail.com>",
   "dependencies"  : {
     "underscore"  : ">=1.7.0",
@@ -35,6 +35,6 @@
   "license"       : "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/17zuoye/sample_diff.git"
+    "url": "https://github.com/17zuoye/sample-diff.git"
   }
 }

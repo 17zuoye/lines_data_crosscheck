@@ -1,4 +1,4 @@
-sample_diff
+sample-diff
 ====================================
 Sample diff
 

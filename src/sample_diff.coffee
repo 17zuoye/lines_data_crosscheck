@@ -72,11 +72,6 @@ class LinesDataCrosscheck
                 _.each item_ids, (item_id) ->
                     [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
 
-                    if itemA is undefined
-                        console.log("item A is not found")
-                    if itemB is undefined
-                        console.log("item B is not found")
-
                     console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
 
                     try # Compact with user defined functions have exceptions
@@ -85,7 +80,7 @@ class LinesDataCrosscheck
                         else
                             curr.diff_items_func(itemA.content, itemB.content)
                     catch err
-                        console.log(err, "\n")
+                        console.log("\n", err, "\n")
                         console.log("two items are: ", [itemA, itemB])
 
                 callback(null, curr.same_count is total_count)

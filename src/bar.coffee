@@ -28,7 +28,8 @@ class Bar
             @bar.tick(@current_size)
             @current_size = 0
         if @bar.complete
-            console.log("\n")
+            console.log "\n"
+            console.log Array(15).join("*"), "\n"
 
 
 
