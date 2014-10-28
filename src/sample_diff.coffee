@@ -8,7 +8,7 @@ Bar          = require './bar'
 require 'coffee-errors'
 
 
-class LinesDataCrosscheck
+class SampleDiff
 
     constructor: (@fileA, @fileB,
                   @compare_items_count,
@@ -177,7 +177,7 @@ class LinesDataCrosscheck
         table.push([@fileA, filesize(@fileA_size)],
                    [@fileB, filesize(@fileB_size)])
 
-        console.log("\n", Array(10).join("#"), "Begin LinesDataCrosscheck ...", Array(10).join("#"))
+        console.log("\n", Array(10).join("#"), "Begin Sample Diff ...", Array(10).join("#"))
         console.log(table.toString(), "\n")
 
     print_process_summary : ->
@@ -191,4 +191,4 @@ class LinesDataCrosscheck
         table.push(["same   count", curr.same_count])
         console.log(table.toString(), "\n")
 
-module.exports = LinesDataCrosscheck
+module.exports = SampleDiff
