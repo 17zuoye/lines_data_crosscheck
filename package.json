@@ -26,12 +26,12 @@
     "grunt-contrib-coffee"    : ""
   },
   "scripts": {
-    "preinstall" : "grunt coffee --verbose",
+    "preinstall" : "grunt --verbose",
     "test" : "./node_modules/.bin/nodeunit test",
     "doc"  : "docco src/sample_diff.js"
   },
   "main"          : "lib/sample_diff.js",
-  "version"       : "0.0.1",
+  "version"       : "0.0.2",
   "license"       : "MIT",
   "repository": {
     "type": "git",

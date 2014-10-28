@@ -1,6 +1,6 @@
 sample-diff
 ====================================
-"Sample diff" diffs two big files with a few of them, and require only two IO.
+"Sample diff" diffs two big files with a few of them, and require only one IO per file.
 The sample algorithm is called [Reservoir sampling](http://en.wikipedia.org/wiki/Reservoir_sampling).
 
 
