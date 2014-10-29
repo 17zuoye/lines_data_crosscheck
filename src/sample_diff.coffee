@@ -144,12 +144,7 @@ class SampleDiff
                                                   callback(null, fileA_sample, fileB_sample)
             ,
             (fileA_sample, fileB_sample, callback) ->
-                # 3. 比较两个样本是否一一对应
-                assert.ok(_.isEqual(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample))))
-                callback(null, fileA_sample, fileB_sample)
-            ,
-            (fileA_sample, fileB_sample, callback) ->
-                # 4. 全部一一对比
+                # 3. 全部一一对比
                 if curr.enable_cache
                     jsonfile.writeFileSync(curr.cache_filename, [
                         fileA_sample, fileB_sample,
@@ -168,7 +163,10 @@ class SampleDiff
         item_ids = _.keys(fileA_sample)
         [curr.same_count, curr.total_count] = [0, item_ids.length]
         _.each item_ids, (item_id) ->
-            [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+            [itemA, itemB] = [
+                fileA_sample[item_id],
+                fileB_sample[item_id] or new ItemIdContent # compact with not exist
+            ]
 
             console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
 
@@ -196,9 +194,10 @@ class SampleDiff
             if item_ids.contains(item_id1)
                 item1 = curr.convert_from_line(line1, bar.line_num)
                 sample_dict[item1.id] = item1
+                # TODO break if dict size is the same?
             if is_end
-                run_callback(sample_dict)
                 curr.fileB_items_count = bar.line_num
+                run_callback(sample_dict)
 
 
     print_two_files_info :  ->
