@@ -24,7 +24,7 @@ class SampleDiff
         @fetch_item_id_func       = opts.fetch_item_id_func      ?= (line1) -> line1
 
         # diff两行数据
-        @diff_items_func          = opts.diff_items_func         ?= (a, b) -> true
+        @diff_items_func          = opts.diff_items_func         ?= (a, b) -> _.isEqual(a, b)
 
         # 数据 反序列化+规整化
         @data_normalization_func  = opts.data_normalization_func ?= (line1) -> line1
@@ -171,10 +171,8 @@ class SampleDiff
             console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
 
             try # Compact with user defined functions have exceptions
-                if _.isEqual(itemA.content, itemB.content)
+                if curr.diff_items_func(itemA.content, itemB.content)
                     curr.same_count += 1
-                else
-                    curr.diff_items_func(itemA.content, itemB.content)
             catch err
                 console.log("\n", err, "\n")
                 console.log("two items are: ", [itemA, itemB])

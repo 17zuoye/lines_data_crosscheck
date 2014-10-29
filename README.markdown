@@ -15,6 +15,7 @@ var opts = {
   },
   'diff_items_func'   : function(a, b) {
        console.log(difflet.compare(a, b), "\n")
+       return _.isEqual(a, b);
    },
    'data_normalization_func'  : function(line1) {
        item1 = process(line1);

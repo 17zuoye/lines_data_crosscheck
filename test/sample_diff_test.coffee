@@ -11,7 +11,13 @@ fetch_item_id_func = (line1) ->
 
 opts = {
             "fetch_item_id_func" : (line1) -> fetch_item_id_func(line1),
-            "diff_items_func"    : (a, b)  -> console.log(difflet.compare(JSON.parse(a), JSON.parse(b)), "\n"),
+            "diff_items_func"    :
+                                   (a, b)  ->
+                                       a = JSON.parse(a)
+                                       b = JSON.parse(b)
+                                       console.log(difflet.compare(a, b), "\n")
+                                       _.isEqual(a, b)
+            ,
         }
 
 exports.SampleDiffTest =
