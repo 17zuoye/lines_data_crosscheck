@@ -1,5 +1,8 @@
 _            = require 'underscore'
 lineReader   = require 'line-reader'
+jsonfile     = require 'jsonfile'
+path         = require 'path'
+fs           = require "fs"
 Set          = require 'set'
 assert       = require 'assert'
 async        = require 'async'
@@ -29,10 +32,23 @@ class SampleDiff
         # 过滤一些元素
         @filter_func              = opts.filter_func             ?= (line1) -> false
 
+        # 是否直接比较缓存数据
+        @enable_cache             = opts.enable_cache            ?= false
+        @cache_filename           = path.join(process.cwd(), 'sample-diff.json')
+
         # 获取和打印文件信息
-        fs          = require "fs"
-        @fileA_size = fs.statSync(@fileA)["size"]
-        @fileB_size = fs.statSync(@fileB)["size"]
+        curr = this
+        if @enable_cache and fs.existsSync(@cache_filename)
+            [
+                fileA_sample, fileB_sample,
+                curr.fileA_items_count, curr.fileB_items_count,
+                curr.fileA_size, curr.fileB_size,
+            ] = jsonfile.readFileSync(curr.cache_filename)
+
+        console.log("current run configuration =>\n", curr, "\n")
+        if _.isUndefined(curr.fileA_size)
+            curr.fileA_size = fs.statSync(@fileA)["size"]
+            curr.fileB_size = fs.statSync(@fileB)["size"]
         @print_two_files_info()
 
     class ItemIdContent
@@ -42,56 +58,17 @@ class SampleDiff
         item1 = @data_normalization_func(line1)
         new ItemIdContent(@fetch_item_id_func(item1), item1, line_num)
 
-
     run: (run_callback) ->
+        run_callback = run_callback || (() -> false)
         curr = this
         curr.start_time = new Date()
 
-        async.waterfall([
-            (callback) ->
-                # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
-                curr.reservoir_sampling curr.fileA, (fileA_sample) ->
-                                                        callback(null, fileA_sample)
-            ,
-            (fileA_sample, callback) ->
-                # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
-                curr.fetch_sample_by_item_ids curr.fileB,
-                                              new Set(_.keys(fileA_sample)),
-                                              (fileB_sample) ->
-                                                  callback(null, fileA_sample, fileB_sample)
-            ,
-            (fileA_sample, fileB_sample, callback) ->
-                # 3. 比较两个样本是否一一对应
-                assert.ok(_.isEqual(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample))))
-                callback(null, fileA_sample, fileB_sample)
-            ,
-            (fileA_sample, fileB_sample, callback) ->
-                # 4. 全部一一对比
-                item_ids = _.keys(fileA_sample)
-                [curr.same_count, total_count] = [0, item_ids.length]
-                _.each item_ids, (item_id) ->
-                    [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+        if curr.enable_cache and fs.existsSync(curr.cache_filename)
+            [fileA_sample, fileB_sample, curr.fileA_items_count, curr.fileB_items_count] = jsonfile.readFileSync(curr.cache_filename)
+            curr.diff_one_by_one(fileA_sample, fileB_sample, run_callback)
+        else
+            curr.__real_run(run_callback)
 
-                    console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
-
-                    try # Compact with user defined functions have exceptions
-                        if _.isEqual(itemA.content, itemB.content)
-                            curr.same_count += 1
-                        else
-                            curr.diff_items_func(itemA.content, itemB.content)
-                    catch err
-                        console.log("\n", err, "\n")
-                        console.log("two items are: ", [itemA, itemB])
-
-                callback(null, curr.same_count is total_count)
-            ,
-            (is_all_same, callback) ->
-                run_callback(is_all_same)
-                curr.print_process_summary()
-            ,
-        ], (err, result) ->
-            console.log(err, result)
-        ,)
 
     reservoir_sampling: (file1, run_callback) ->
         # 参考文章。感谢 @晓光 提示。
@@ -150,6 +127,62 @@ class SampleDiff
                                                     , {}
                 curr.fileA_items_count = bar.line_num
                 run_callback(fileA_sample)
+
+    __real_run : (run_callback) ->
+        curr = this
+        async.waterfall([
+            (callback) ->
+                # 1. 遍历 文件A, 取得随机测试样本, 顺便取得对应统计数据
+                curr.reservoir_sampling curr.fileA, (fileA_sample) ->
+                                                        callback(null, fileA_sample)
+            ,
+            (fileA_sample, callback) ->
+                # 2. 遍历 文件B, 各自取得 文件A统计样本 对应的 统计数据
+                curr.fetch_sample_by_item_ids curr.fileB,
+                                              new Set(_.keys(fileA_sample)),
+                                              (fileB_sample) ->
+                                                  callback(null, fileA_sample, fileB_sample)
+            ,
+            (fileA_sample, fileB_sample, callback) ->
+                # 3. 比较两个样本是否一一对应
+                assert.ok(_.isEqual(new Set(_.keys(fileA_sample)), new Set(_.keys(fileB_sample))))
+                callback(null, fileA_sample, fileB_sample)
+            ,
+            (fileA_sample, fileB_sample, callback) ->
+                # 4. 全部一一对比
+                if curr.enable_cache
+                    jsonfile.writeFileSync(curr.cache_filename, [
+                        fileA_sample, fileB_sample,
+                        curr.fileA_items_count, curr.fileB_items_count,
+                        curr.fileA_size, curr.fileB_size,
+                    ])
+
+                curr.diff_one_by_one(fileA_sample, fileB_sample, run_callback)
+            ,
+        ], (err, result) ->
+            console.log(err, result)
+        ,)
+
+    diff_one_by_one: (fileA_sample, fileB_sample, run_callback) ->
+        curr = this
+        item_ids = _.keys(fileA_sample)
+        [curr.same_count, curr.total_count] = [0, item_ids.length]
+        _.each item_ids, (item_id) ->
+            [itemA, itemB] = [fileA_sample[item_id], fileB_sample[item_id]]
+
+            console.log("\n[line num] FIRST:" + itemA.line_num + " SECOND:" + itemB.line_num)
+
+            try # Compact with user defined functions have exceptions
+                if _.isEqual(itemA.content, itemB.content)
+                    curr.same_count += 1
+                else
+                    curr.diff_items_func(itemA.content, itemB.content)
+            catch err
+                console.log("\n", err, "\n")
+                console.log("two items are: ", [itemA, itemB])
+        curr.print_process_summary()
+        run_callback(curr.same_count is curr.total_count)
+
 
 
     fetch_sample_by_item_ids: (file1, item_ids, run_callback) ->
