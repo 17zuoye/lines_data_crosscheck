@@ -5,8 +5,14 @@ difflet      = require('difflet')
 _            = require 'underscore'
 fs           = require 'fs'
 
+
+diff         = require('json-diff/lib/index').diff
+colorize     = require('json-diff/lib/colorize').colorize
+color_diff   = (a, b) -> console.log(colorize(diff(a, b)))
+
+
 fetch_item_id_func = (line1) ->
-    #_.each(Array(8), -> Array(Math.pow(10, 7)).join("=").length) # mimic slow cpu
+                _.each(Array(8), -> Array(Math.pow(10, 7)).join("=").length) # mimic slow cpu
                 JSON.parse(line1)['id']
 
 opts = {
@@ -15,7 +21,7 @@ opts = {
                                    (a, b)  ->
                                        a = JSON.parse(a)
                                        b = JSON.parse(b)
-                                       console.log(difflet.compare(a, b), "\n")
+                                       color_diff(a, b)
                                        _.isEqual(a, b)
             ,
         }
