@@ -45,7 +45,9 @@ class SampleDiff
                 curr.fileA_size, curr.fileB_size,
             ] = jsonfile.readFileSync(curr.cache_filename)
 
-        console.log("current run configuration =>\n", curr, "\n")
+        if @enable_cache
+            console.log("[cache file] is ", @cache_filename)
+
         if _.isUndefined(curr.fileA_size)
             curr.fileA_size = fs.statSync(@fileA)["size"]
             curr.fileB_size = fs.statSync(@fileB)["size"]

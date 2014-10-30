@@ -8,7 +8,11 @@ fs           = require 'fs'
 
 diff         = require('json-diff/lib/index').diff
 colorize     = require('json-diff/lib/colorize').colorize
-color_diff   = (a, b) -> console.log(colorize(diff(a, b)))
+color_diff   = (a, b) ->
+                   result = diff(a, b)
+                   if result
+                     console.log(colorize(result))
+                   return !!result
 
 
 fetch_item_id_func = (line1) ->
