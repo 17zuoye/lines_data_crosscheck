@@ -6,15 +6,6 @@ _            = require 'underscore'
 fs           = require 'fs'
 
 
-diff         = require('json-diff/lib/index').diff
-colorize     = require('json-diff/lib/colorize').colorize
-color_diff   = (a, b) ->
-                   result = diff(a, b)
-                   if result
-                     console.log(colorize(result))
-                   return !!result
-
-
 fetch_item_id_func = (line1) ->
                 _.each(Array(8), -> Array(Math.pow(10, 7)).join("=").length) # mimic slow cpu
                 JSON.parse(line1)['id']
@@ -25,7 +16,7 @@ opts = {
                                    (a, b)  ->
                                        a = JSON.parse(a)
                                        b = JSON.parse(b)
-                                       color_diff(a, b)
+                                       SampleDiff.json_color_diff(a, b)
                                        _.isEqual(a, b)
             ,
         }

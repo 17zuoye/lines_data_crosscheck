@@ -223,4 +223,7 @@ class SampleDiff
         table.push(["same   count", curr.same_count])
         console.log(table.toString(), "\n")
 
+
+SampleDiff.json_color_diff = require("./utils").json_color_diff
+
 module.exports = SampleDiff
