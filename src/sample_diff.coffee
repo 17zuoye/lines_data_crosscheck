@@ -78,11 +78,19 @@ class SampleDiff
 
         # Cloudera 也有介绍文章和对应实现。
         # http://blog.cloudera.com/blog/2013/04/hadoop-stratified-randosampling-algorithm/
-        #
-        # https://github.com/cloudera/oryx/blob/7d9b3e2e7331b54c7744fd06038ae40c202e56e4/
-        # computation-common/src/main/java/com/cloudera/oryx/computation/common/sample/ReservoirSampling.java
+        # https://github.com/cloudera/oryx/blob/7d9b3e2e7331b54c7744fd06038ae40c202e56e4/computation-common/src/main/java/com/cloudera/oryx/computation/common/sample/ReservoirSampling.java
 
-        # 以下优化目的只是为了省 一遍取文件行数 的IO。
+
+        ## 对 [蓄水池抽样算法证明](http://sobuhu.com/algorithm/2012/11/01/reservoir.html) 证明错误的分析。
+        #
+        # 终于碰到 Reservoir Sampling 的一个数学证明了，公式推导没问题，但是我好奇的是 k / n 是如何被确认的，
+        # 感觉这样是用公式自己证明自己了，即是用后验的角度看问题。
+        #
+        # Reservoir Sampling 算法的初衷是未知总数N是多少，程序只知道当前是第几个index。而
+        # 需求是保证在随便哪个index停止，对于到目前为止遍历过的所有元素（而非之后的）都是
+        # 概率公平的。所以拿后面未抵达的数据的相关概率来证明算法的正确性在本质是错误的，即
+        # 公式证明里不应该引入N这个数。所以我以为 Cloudera 博客上的数学归纳法证明是对的，即
+        # 枚举每一种情况。
 
         randomInt = require('random-tools').randomInt
 
@@ -112,9 +120,8 @@ class SampleDiff
                 else
                     is_insert = false
 
-                # 分两步来理解 [keep, remove]
-                # 1. 先是 remove ，为了保障对每一个元素都是公平的，所以在任何一步停下，他们的概率都是均等的。
-                # 2. 后是 keep, 不管时间的发生顺序，抽签的最后一个就不用抽了。而这里是每个元素都有一定的概率。
+                # 终于碰到 Reservoir Sampling 的一个数学证明了，公式推导没问题，但是我好奇的是 k / n 是如何被确认的，感觉这样是用公式自己证明自己了，即是用后验的角度看问题。
+
 
                 # 直观验证测试方法 就是看看最后两个文件选出来的行数在统计上是否分布均匀。
 
