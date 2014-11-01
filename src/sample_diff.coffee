@@ -92,6 +92,8 @@ class SampleDiff
         # 公式证明里不应该引入N这个数。所以我以为 Cloudera 博客上的数学归纳法证明是对的，即
         # 枚举每一种情况。
 
+        # 直观验证测试方法 就是看看最后两个文件选出来的行数在统计上是否分布均匀。
+
         randomInt = require('random-tools').randomInt
 
         [sample_array, curr] = [[], this]
@@ -119,11 +121,6 @@ class SampleDiff
                     insert_at_idx = random_idx
                 else
                     is_insert = false
-
-                # 终于碰到 Reservoir Sampling 的一个数学证明了，公式推导没问题，但是我好奇的是 k / n 是如何被确认的，感觉这样是用公式自己证明自己了，即是用后验的角度看问题。
-
-
-                # 直观验证测试方法 就是看看最后两个文件选出来的行数在统计上是否分布均匀。
 
             if is_insert
                 sample_array[insert_at_idx] = curr.convert_from_line(line1, bar.line_num)
