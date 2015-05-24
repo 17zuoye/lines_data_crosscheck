@@ -9,5 +9,6 @@ module.exports = (grunt) ->
           'lib/utils.js'         : ['src/utils.coffee'],
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
+  grunt.loadNpmTasks 'grunt-contrib-nodeunit'
 
   grunt.registerTask 'default', ['coffee']

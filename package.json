@@ -24,11 +24,14 @@
     "nodeunit"                : ">= 0.9",
     "coffee-script"           : ">= 1.8",
     "grunt"                   : "",
-    "grunt-contrib-coffee"    : ""
+    "grunt-contrib-coffee"    : "",
+    "grunt-contrib-nodeunit"  : "",
+    "difflet"                 : ""
   },
   "scripts": {
     "prepublish" : "grunt coffee --verbose",
     "test" : "./node_modules/.bin/nodeunit test",
+    "tests" : "grunt travis --verbose",
     "doc"  : "docco src/sample_diff.js"
   },
   "main"          : "lib/sample_diff.js",
